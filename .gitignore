@@ -127,3 +127,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+/ftm_clientcred.secret
+/ftm_usercred.secret
+.idea
