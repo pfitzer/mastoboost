@@ -1,0 +1,6 @@
+/ftm_clientcred.secret
+/ftm_usercred.secret
+.idea
+Dockerfile
+config-sample.yml
+config.yml

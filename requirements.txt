@@ -1,2 +1,2 @@
-Mastodon.py==1.6.1
+Mastodon.py==1.6.2
 PyYAML==6.0

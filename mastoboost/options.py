@@ -1,7 +1,7 @@
 import sys
 from optparse import OptionParser
 
-from mastoboost import __version__
+__version__ = '0.1'
 
 
 def show_version(option, opt, value, parser):

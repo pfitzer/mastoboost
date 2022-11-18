@@ -1,1 +1,3 @@
-__version__ = '0.1'
+from options import options
+
+__all__ = ["options"]
