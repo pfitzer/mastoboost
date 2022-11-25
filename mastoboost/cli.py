@@ -1,6 +1,9 @@
 import os
 import platform
 import sys
+import re
+import time
+from datetime import datetime
 from getpass import getpass
 
 import yaml
@@ -19,7 +22,13 @@ CONFIG = os.path.join(os.path.dirname(__file__), '..', 'config.yml')
 
 
 def register_app():
+    """
+    register the app on a Mastodon instance
+    :return:
+    """
+    regex = r"(%0d|=)"
     uri = input('Mastodon URL: ')
+    uri = re.sub(regex, '', uri, 0, re.MULTILINE)
     login = input('login: ')
     if platform.system() in ['linux', 'linux2', 'darwin']:
         pw = getpass(prompt='Password: ')
@@ -48,33 +57,43 @@ if options.register or not os.path.exists(USER_CRED) or not os.path.exists(CLIEN
 
 
 class MastoBoost(object):
-
+    """
+    all the logic is here
+    """
     def __init__(self):
         self.mastodon = Mastodon(access_token=USER_CRED)
-        self.settings = self.__load_config()
-        boost = False
-        last = {'id': self.settings['last_id']} if 'last_id' in self.settings else None
-        toots = self.mastodon.timeline(timeline='public', since_id=last)
-        if toots:
-            last_id = toots[0]['id']
-            self.__update_config(last_id)
-        for toot in toots:
-            for tag in toot['tags']:
-                if tag['name'] in self.settings['hashtags']:
-                    boost = True
-            if boost:
-                print(toot['id'])
-                # self.mastodon.status_reblog(toot['id'])
+        self.__load_settings()
+        tooted = []
+        last = datetime.fromtimestamp(self.settings['last_id']) if 'last_id' in self.settings else None
+        for tag in self.settings['hashtags']:
+            toots = self.mastodon.timeline(timeline=f'tag/{tag}', since_id=last, remote=True, limit=None)
 
-    def __load_config(self):
+            for toot in toots:
+                if toot['id'] not in tooted:
+                    print("boosted toot: {id}".format(id=toot['id']))
+                    #self.mastodon.status_reblog(toot['id'])
+                tooted.append(toot['id'])
+
+        self.__update_settings()
+
+    def __load_settings(self):
+        """
+        load the settings from config.yml
+        :return:
+        """
         try:
             f = open(CONFIG)
         except FileNotFoundError:
             raise Exception(f'{CONFIG} not found')
-        return yaml.load(f, Loader=Loader)
+        self.settings = yaml.load(f, Loader=Loader)
 
-    def __update_config(self, last_id: int):
-        self.settings['last_id'] = last_id
+    def __update_settings(self):
+        """
+        wright the last processed toot id to config.yml
+        :param last_id:
+        :return:
+        """
+        self.settings['last_id'] = int(time.time())
         yaml.dump(self.settings, open(CONFIG, 'w'), Dumper=Dumper)
 
 
