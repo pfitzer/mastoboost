@@ -44,5 +44,5 @@ docker pull pfitzer/mastoboost:latest
 # authoríze the app on your Mastodon instance
 docker run -i pfitzer/mastoboost:latest /usr/local/bin/python mastoboost/cli.py -r
 # run the container
-docker run -d --mount type=bind,source="/absolute/path/to/config.yml",target=/app/config.yml pfitzer/mastoboost:latest
+docker run -d --mount type=bind,source="$(pwd)/config.yml",target=/app/config.yml pfitzer/mastoboost:latest
 ```

@@ -2,8 +2,6 @@ import os
 import platform
 import sys
 import re
-import time
-from datetime import datetime
 from getpass import getpass
 
 import yaml
@@ -13,7 +11,7 @@ try:
 except ImportError:
     from yaml import Loader, Dumper
 
-from mastodon import Mastodon
+from mastodon import Mastodon, StreamListener
 from options import options
 
 CLIENT_CRED = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'ftm_clientcred.secret'))
@@ -51,51 +49,32 @@ def register_app():
     )
 
 
+class Listener(StreamListener):
+
+    def __init__(self):
+        with open(CONFIG, 'r') as config_file:
+            self.config = yaml.load(config_file, Loader=Loader)
+
+    def on_update(self, status):
+        if status["visibility"] in ("public", "unlisted"):
+            content = status["content"]
+            print(f"processing {status['id']}")
+            for hashtag in self.config["hashtags"]:
+                if f"#{hashtag}" in content:
+                    print(f"Boosting status {status['id']}")
+                    mastodon.status_reblog(status["id"])
+                    break
+
+
 if options.register or not os.path.exists(USER_CRED) or not os.path.exists(CLIENT_CRED):
     register_app()
     sys.exit(0)
 
+if options.listen:
+    mastodon = Mastodon(
+        access_token='ftm_usercred.secret',
+        api_base_url='https://social.main-angler.de'
+    )
 
-class MastoBoost(object):
-    """
-    all the logic is here
-    """
-    def __init__(self):
-        self.mastodon = Mastodon(access_token=USER_CRED)
-        self.__load_settings()
-        tooted = []
-        last = datetime.fromtimestamp(self.settings['last_id']) if 'last_id' in self.settings else None
-        for tag in self.settings['hashtags']:
-            toots = self.mastodon.timeline(timeline=f'tag/{tag}', since_id=last, remote=True, limit=None)
-
-            for toot in toots:
-                if toot['id'] not in tooted:
-                    print("boosted toot: {id}".format(id=toot['id']))
-                    #self.mastodon.status_reblog(toot['id'])
-                tooted.append(toot['id'])
-
-        self.__update_settings()
-
-    def __load_settings(self):
-        """
-        load the settings from config.yml
-        :return:
-        """
-        try:
-            f = open(CONFIG)
-        except FileNotFoundError:
-            raise Exception(f'{CONFIG} not found')
-        self.settings = yaml.load(f, Loader=Loader)
-
-    def __update_settings(self):
-        """
-        wright the last processed toot id to config.yml
-        :param last_id:
-        :return:
-        """
-        self.settings['last_id'] = int(time.time())
-        yaml.dump(self.settings, open(CONFIG, 'w'), Dumper=Dumper)
-
-
-if __name__ == '__main__':
-    mb = MastoBoost()
+    listener = Listener()
+    mastodon.stream_public(listener)

@@ -1,6 +1,9 @@
-/ftm_clientcred.secret
-/ftm_usercred.secret
 .idea
+.venv
+.gitignore
 Dockerfile
 config-sample.yml
-config.yml
+LICENSE
+README.md
+ftm_clientcred.secret
+ftm_usercred.secret

@@ -1,1 +1,0 @@
-*/5 * * * * cd /app/mastoboost && /usr/local/bin/python cli.py >> cron_log.log 2>&1
