@@ -1,6 +1,8 @@
 # mastoboost
 ## A bot for boosting Mastodon toots with given hashtags.
 
+[![Create Release](https://github.com/pfitzer/mastoboost/actions/workflows/build.yaml/badge.svg)](https://github.com/pfitzer/mastoboost/actions/workflows/build.yaml)
+
 ### get the code
 If you want to run the code without docker
 
