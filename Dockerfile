@@ -1,5 +1,7 @@
 FROM python:3.11
 
+RUN apt update && apt upgrade -y
+
 EXPOSE 80
 EXPOSE 443
 

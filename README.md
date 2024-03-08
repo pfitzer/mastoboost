@@ -13,15 +13,12 @@ python3 -m venv venv
 venv/bin/activate
 pip install -r requirements.txt
 
-# authorize the app on your Mastodon instance
-python mastoboost/cli.py -r
-# and follow the cli
-# Mastodon URL:
-# username:
-# password:
+# create envorionment variables
+export INSTANCE=https://...
+export USERNAME=YOUR_USERNAME
+export PASSWORD=YOUR_PASSWORD
 
-# create a cronjob
-*/5 * * * * cd /path/to/mastoboost && env/bin/activate && /path/to/python mastodon/cli.py >> cron_log.log 2>&1
+nohup python mastoboost/cli.py > /path/to/output.log 2>&1 &
 ```
 
 
@@ -36,13 +33,26 @@ hashtags:
 - tag3
 ```
 
-### run with docker
+### run with docker compose
 
 ```bash
-docker pull pfitzer/mastoboost:latest
+cp config-sample.yml config.yml
+cp .env.example .env
+# and edit them matching your needs
+```
 
-# authoríze the app on your Mastodon instance
-docker run -i pfitzer/mastoboost:latest /usr/local/bin/python mastoboost/cli.py -r
-# run the container
-docker run -d --mount type=bind,source="$(pwd)/config.yml",target=/app/config.yml pfitzer/mastoboost:latest
+```yaml
+version: '3'
+
+services:
+  app:
+    image: pfitzer/mastoboost
+    volumes:
+      - ./config.yml:/app/config.yml
+    env_file:
+      - .env
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: >
+      sh -c "python mastoboost/cli.py"
 ```
