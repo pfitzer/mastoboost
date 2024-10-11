@@ -49,6 +49,7 @@ version: '3'
 services:
   app:
     image: pfitzer/mastoboost
+    restart: always
     volumes:
       - ./config.yml:/app/config.yml
     env_file:
