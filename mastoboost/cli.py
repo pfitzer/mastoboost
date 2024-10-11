@@ -38,6 +38,7 @@ def register_app():
 
 def run_app():
     mastodon = Mastodon(
+        version_check_mode="none",
         access_token='ftm_usercred.secret',
         api_base_url=f'{os.getenv("INSTANCE")}'
     )
