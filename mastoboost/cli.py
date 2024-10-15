@@ -61,7 +61,7 @@ class Listener(StreamListener):
             for hashtag in self.config["hashtags"]:
                 if f"#{hashtag}" in content:
                     print(f"Boosting status {status['id']}")
-                    self.mastodon.status_reblog(status["id"])
+                    self.mastodon.status_reblog(status["id"], visibility='public')
                     break
 
 
